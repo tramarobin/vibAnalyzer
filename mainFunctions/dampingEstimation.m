@@ -103,7 +103,7 @@ if size(powers,2)>1
         power=sum(powers,2);
     end
     
-    if delay2peak==0
+    if isempty(delay2peak)
         [Maximal_power,maxPos]=max(power);
     elseif numel(delay2peak)==1
         [Maximal_power,maxPos]=max(power(1:delay2peak*Fs));

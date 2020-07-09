@@ -57,8 +57,9 @@ accParam.CWT=cwtAnalysis(acc,'fb',fb,'Fs',Fs,'infFreq',infFreq,'supFreq',supFreq
 %% FFT
 accParam.FFT=fftAnalysis(acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'Fs',Fs,'infFreq',infFreq,'supFreq',supFreq,'padding',padding);
 
-%% EMD
-accParam.EMD=emdAnalysis(acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'Fs',Fs,'infFreq',infFreq,'supFreq',supFreq,'padding',padding,'interpFreq',interpFreq,'newFs',newFs,'reflection',reflection);
+%% EMD & PEEMD
+accParam.EMD=emdAnalysis(acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'Fs',Fs,'infFreq',1,'supFreq',supFreq,'padding',padding,'interpFreq',interpFreq,'newFs',newFs,'reflection',reflection);
+accParam.PEEMD=peemdAnalysis(acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'Fs',Fs,'infFreq',1,'supFreq',supFreq,'padding',padding,'interpFreq',interpFreq,'newFs',newFs,'reflection',reflection);
 
 %% Estimation
 accParam.ESTIM=accEstimation(acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'Fs',Fs);
