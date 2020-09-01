@@ -24,13 +24,14 @@ addParameter(p,'Fs',1000,@isnumeric); % sample frequency
 addParameter(p,'padding',2048,@isnumeric); % number of point for padding the FFT analysis
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure
 addParameter(p,'newFig',0,@isnumeric); % if 1, plot new figure
-addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)
-addParameter(p,'interpFreq',1,@isnumeric); % change interpolation frequency to reduce map size
+addParameter(p,'preImpact',[],@isnumeric); % pre impact time (default = start of the signal)
+addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)addParameter(p,'interpFreq',1,@isnumeric); % change interpolation frequency to reduce map size
 addParameter(p,'newFs',[],@isnumeric); % change sample frequency to reduce map size (must be < Fs)
 addParameter(p,'reflection',0,@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2048 points centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
 addParameter(p,'noiseAmplitude',0.2,@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2048 points centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
 addParameter(p,'nRealisations',100,@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2048 points centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
 addParameter(p,'maxIterations',500,@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2048 points centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
+addParameter(p,'interpFreq',1,@isnumeric); % change interpolation frequency to reduce map size
 
 parse(p,varargin{:});
 infFreq=p.Results.infFreq;
@@ -39,6 +40,7 @@ Fs=p.Results.Fs;
 padding=p.Results.padding;
 plotFig=p.Results.plotFig;
 newFig=p.Results.newFig;
+preImpact=p.Results.preImpact;
 postImpact=p.Results.postImpact;
 interpFreq=p.Results.interpFreq;
 newFs=p.Results.newFs;
@@ -48,11 +50,13 @@ nRealisations=p.Results.nRealisations;
 maxIterations=p.Results.maxIterations;
 
 acc=transposeColmunIfNot(acc);
+[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 
 %% IMF and FFT
 for i=1:size(acc,2)
     peemdParam.IMF{i}=peemd(acc(:,i),noiseAmplitude,nRealisations,maxIterations)';
-    fftParam=fftAnalysis(peemdParam.IMF{i},'padding',padding,'Fs',Fs,'infFreq',1);
+    fftParam=fftAnalysis(peemdParam.IMF{i},'padding',padding,'Fs',Fs,'infFreq',6);
     if ~isempty(infFreq) || ~isempty(supFreq)
         if ~isempty(infFreq)
             peemdParam.IMF{i}=peemdParam.IMF{i}(:,fftParam.FT.sep.main>infFreq);
@@ -63,7 +67,6 @@ for i=1:size(acc,2)
             peemdParam.IMF{i}=peemdParam.IMF{i}(:,fftParam.FT.sep.main<supFreq);
             fftParam.FT.sep.main=fftParam.FT.sep.main(fftParam.FT.sep.main<supFreq);
             fftParam.FT.sep.ratioTotalAmplitude=fftParam.FT.sep.ratioTotalAmplitude(fftParam.FT.sep.main<supFreq);
-            
         end
     end
     
@@ -97,11 +100,18 @@ if plotFig==1
         subplot(2,numel(peemdParam.FFT),numel(peemdParam.FFT)+i)
         
         f=peemdParam.FFT{i}.normalizedFT.f;
-        energy=peemdParam.FFT{i}.normalizedFT.norm.amplitude;
+         if size(peemdParam.IMF{i},2)>1
+            energy=peemdParam.FFT{i}.normalizedFT.norm.amplitude;
+            mainFrequency=peemdParam.FFT{i}.normalizedFT.norm.main;
+            medianFrequency=peemdParam.FFT{i}.normalizedFT.norm.median;
+            meanFrequency=peemdParam.FFT{i}.normalizedFT.norm.mean;
+        else
+            energy=peemdParam.FFT{i}.normalizedFT.sep.amplitude;
+            mainFrequency=peemdParam.FFT{i}.normalizedFT.sep.main;
+            medianFrequency=peemdParam.FFT{i}.normalizedFT.sep.median;
+            meanFrequency=peemdParam.FFT{i}.normalizedFT.sep.mean;
+        end
         energies=peemdParam.FFT{i}.normalizedFT.sep.amplitude;
-        mainFrequency=peemdParam.FFT{i}.normalizedFT.norm.main;
-        meanFrequency=peemdParam.FFT{i}.normalizedFT.norm.mean;
-        medianFrequency=peemdParam.FFT{i}.normalizedFT.norm.median;
         
         % find close points for mean frequency
         [~,meanFrequency4plot]=min(abs(meanFrequency-f));

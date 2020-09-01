@@ -3,13 +3,20 @@ p = inputParser;
 addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure (for one axis, or the norm)
 addParameter(p,'newFig',0,@isnumeric); % if 1, plot new figure
+addParameter(p,'preImpact',[],@isnumeric); % pre impact time (default = start of the signal)
+addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)
 parse(p,varargin{:});
 Fs=p.Results.Fs;
 plotFig=p.Results.plotFig;
 newFig=p.Results.newFig;
-
+preImpact=p.Results.preImpact;
+postImpact=p.Results.postImpact;
 
 acc=transposeColmunIfNot(acc);
+
+[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
+
 options = optimoptions('fmincon','Display','off');
 
 for i=1:size(acc,2)

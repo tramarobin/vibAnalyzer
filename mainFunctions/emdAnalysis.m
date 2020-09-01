@@ -24,10 +24,11 @@ addParameter(p,'Fs',1000,@isnumeric); % sample frequency
 addParameter(p,'padding',2048,@isnumeric); % number of point for padding the FFT analysis
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure
 addParameter(p,'newFig',0,@isnumeric); % if 1, plot new figure
-addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)
-addParameter(p,'interpFreq',1,@isnumeric); % change interpolation frequency to reduce map size
+addParameter(p,'preImpact',[],@isnumeric); % pre impact time (default = start of the signal)
+addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)addParameter(p,'interpFreq',1,@isnumeric); % change interpolation frequency to reduce map size
 addParameter(p,'newFs',[],@isnumeric); % change sample frequency to reduce map size (must be < Fs)
 addParameter(p,'reflection',0,@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2048 points centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
+addParameter(p,'interpFreq',1,@isnumeric); % change interpolation frequency to reduce map size
 
 parse(p,varargin{:});
 infFreq=p.Results.infFreq;
@@ -36,12 +37,15 @@ Fs=p.Results.Fs;
 padding=p.Results.padding;
 plotFig=p.Results.plotFig;
 newFig=p.Results.newFig;
+preImpact=p.Results.preImpact;
 postImpact=p.Results.postImpact;
 interpFreq=p.Results.interpFreq;
 newFs=p.Results.newFs;
 reflection=p.Results.reflection;
 
 acc=transposeColmunIfNot(acc);
+[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 
 %% IMF and FFT
 for i=1:size(acc,2)
@@ -88,11 +92,18 @@ if plotFig==1
         subplot(2,numel(emdParam.FFT),numel(emdParam.FFT)+i)
         
         f=emdParam.FFT{i}.normalizedFT.f;
-        energy=emdParam.FFT{i}.normalizedFT.norm.amplitude;
+        if size(emdParam.IMF{i},2)>1
+            energy=emdParam.FFT{i}.normalizedFT.norm.amplitude;
+            mainFrequency=emdParam.FFT{i}.normalizedFT.norm.main;
+            medianFrequency=emdParam.FFT{i}.normalizedFT.norm.median;
+            meanFrequency=emdParam.FFT{i}.normalizedFT.norm.mean;
+        else
+            energy=emdParam.FFT{i}.normalizedFT.sep.amplitude;
+            mainFrequency=emdParam.FFT{i}.normalizedFT.sep.main;
+            medianFrequency=emdParam.FFT{i}.normalizedFT.sep.median;
+            meanFrequency=emdParam.FFT{i}.normalizedFT.sep.mean;
+        end
         energies=emdParam.FFT{i}.normalizedFT.sep.amplitude;
-        mainFrequency=emdParam.FFT{i}.normalizedFT.norm.main;
-        meanFrequency=emdParam.FFT{i}.normalizedFT.norm.mean;
-        medianFrequency=emdParam.FFT{i}.normalizedFT.norm.median;
         
         % find close points for mean frequency
         [~,meanFrequency4plot]=min(abs(meanFrequency-f));

@@ -24,6 +24,8 @@ addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure
 addParameter(p,'newFig',0,@isnumeric); % if 1, plot new figure
 addParameter(p,'isIMF',0,@isnumeric); % 1 sum the spectrums if IMF
+addParameter(p,'preImpact',[],@isnumeric); % pre impact time (default = start of the signal)
+addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)
 
 parse(p,varargin{:});
 infFreq=p.Results.infFreq;
@@ -33,12 +35,17 @@ Fs=p.Results.Fs;
 plotFig=p.Results.plotFig;
 newFig=p.Results.newFig;
 isIMF=p.Results.isIMF;
+preImpact=p.Results.preImpact;
+postImpact=p.Results.postImpact;
+
 
 acc=transposeColmunIfNot(acc);
+[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 
 %% padding
 if isempty(padding)
-    padding=2^nextpow2(size(acc,1)); % pad to next power of 2
+    padding=2^(nextpow2(size(acc,1))+2); % pad to next+2 power of 2
 end
 
 accPad=[acc ;zeros(padding-size(acc,1),size(acc,2))];

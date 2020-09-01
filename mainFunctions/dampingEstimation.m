@@ -54,7 +54,11 @@ for i=1:size(power,2)
     end
     
     Diff_Puissance=diff(power);
-    [~,Damp_start]=min(Diff_Puissance(maxPos:end));
+    if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
+        [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
+    else
+        [~,Damp_start]=min(Diff_Puissance(maxPos:end));
+    end
     Damp_start=Damp_start+maxPos-1;
     Damp_seuil=find(power(Damp_start:end)<powerLimits*Maximal_power,1)+Damp_start-1;
     Damp_diff_d=find(Diff_Puissance(Damp_start:end)>0.001*power(Damp_start));
@@ -113,7 +117,11 @@ if size(powers,2)>1
     end
     
     Diff_Puissance=diff(power);
-    [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(100*Fs/1000)));
+    if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
+        [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
+    else
+        [~,Damp_start]=min(Diff_Puissance(maxPos:end));
+    end
     Damp_start=Damp_start+maxPos-1;
     Damp_seuil=find(power(Damp_start:end)<powerLimits*Maximal_power,1)+Damp_start-1;
     Damp_diff_d=find(Diff_Puissance(Damp_start:end)>0.001*power(Damp_start));
@@ -156,19 +164,23 @@ dampingParam.samplingFrequency=Fs;
 %% PLOT
 if plotFig==1
     if newFig==1
-        figure
+        figure('visible','on')
     end
     
     time=1/Fs:1/Fs:size(power,1)/Fs;
-    if size(powers,2)>1
+    if size(powers,2)>1 & size(powers,2)<4
         plot(time,power,'k','HandleVisibility','on'); hold on
         plot(time,powers(:,1),'-.k','HandleVisibility','on');
         plot(time,powers(:,2),'-.k','HandleVisibility','off');
         if size(powers,2)>2
             plot(time,powers(:,3),'-.k','HandleVisibility','off');
         end
-    else
+    elseif size(powers,2)==1
         plot(time,power,'k','HandleVisibility','off'); hold on
+    else
+        plot(time,power,'k','HandleVisibility','on'); hold on
+        plot(time,powers(:,1),'-.k','HandleVisibility','on');
+        plot(time,powers(:,2:end),'-.k','HandleVisibility','off');
     end
     scatter(time(maxPos),Maximal_power,'k+','HandleVisibility','off')
     if Damp_start<numel(time)
@@ -182,7 +194,7 @@ if plotFig==1
         end
     end
     
-    text(time(maxPos)+0.05*max(time),Maximal_power,['Peak amplitude = ' sprintf('%0.1f',Maximal_power) ' m\cdots^-^2/s at t = ' sprintf('%3.3f',maxPos/Fs) ' s'])
+    text(time(maxPos)+0.05*max(time),Maximal_power,['Peak amplitude = ' sprintf('%0.1f',Maximal_power) ' ' units ' at t = ' sprintf('%3.3f',maxPos/Fs) ' s'])
     text(0.02*max(time),0.2*max(power),['Damping coefficient = ' sprintf('%3.1f',Damping_property) ' s^-^1'])
     text(0.02*max(time),0.1*max(power),['Settling time = ' sprintf('%3.3f',settlingTime) ' s'])
     
@@ -190,7 +202,12 @@ if plotFig==1
     ylabel(['Amplitude (' units ')'])
     title(titleFig)
     if size(powers,2)>1
-        legend({'norm of signals','signals from different axes',['Start of damping estimation at t = ' sprintf('%3.3f',Damp_start/Fs) ' s'],['End of damping estimation at t = ' sprintf('%3.3f',Damp_end/Fs) ' s'],'Least-square minimisation'},'box','off')
+        if isIMF==0
+            legend({'norm of signals','signals from different axes',['Start of damping estimation at t = ' sprintf('%3.3f',Damp_start/Fs) ' s'],['End of damping estimation at t = ' sprintf('%3.3f',Damp_end/Fs) ' s'],'Least-square minimisation'},'box','off')
+        else
+            legend({'sum of sub signals','sub signals',['Start of damping estimation at t = ' sprintf('%3.3f',Damp_start/Fs) ' s'],['End of damping estimation at t = ' sprintf('%3.3f',Damp_end/Fs) ' s'],'Least-square minimisation'},'box','off')
+        end
+        
     else
         legend({['Start of damping estimation at t = ' sprintf('%3.3f',Damp_start/Fs) ' s'],['End of damping estimation at t = ' sprintf('%3.3f',Damp_end/Fs) ' s'],'Least-square minimisation'},'box','off')
     end

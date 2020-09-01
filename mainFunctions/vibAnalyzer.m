@@ -1,5 +1,5 @@
 % Combine different types of analysis to characterize transient vibratory signals
-% time (temporalAnalysis), frequencial (fftAnalysis) and time-frequency (cwtAnalysis and emdAnalysis)
+% time (temporalAnalysis), frequencial (fftAnalysis) and time-frequency (cwtAnalysis,wtAnalysis, emdAnalysis, peemdAnalysis)
 % see the details for each funtions
 % The plot represents the time and cwt analyses
 % /!\ require wavelet (for CWT), signal (for EMD), and optimisation (for damping and acc (model) estimation) toolboxes 
@@ -63,6 +63,9 @@ accParam.PEEMD=peemdAnalysis(acc(preImpactPoints:preImpactPoints+postImpactPoint
 
 %% Estimation
 accParam.ESTIM=accEstimation(acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'Fs',Fs);
+
+%% WT VVT/Enders
+accParam.WT=wtAnalysis(acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'Fs',Fs,'infFreq',infFreq,'supFreq',supFreq);
 
 %% PLOT (temportal + CWT)
 if plotFig==1

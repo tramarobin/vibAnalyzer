@@ -25,14 +25,20 @@ addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure
 addParameter(p,'newFig',0,@isnumeric); % if 1, plot in a new figure
 addParameter(p,'isIMF',0,@isnumeric); % 1 sum the IMFs instead of norm if IMFs (in .norm)
-
+addParameter(p,'preImpact',[],@isnumeric); % pre impact time (default = start of the signal)
+addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)
 parse(p,varargin{:});
 Fs=p.Results.Fs;
 plotFig=p.Results.plotFig;
 newFig=p.Results.newFig;
 isIMF=p.Results.isIMF;
+preImpact=p.Results.preImpact;
+postImpact=p.Results.postImpact;
 
 acc=transposeColmunIfNot(acc);
+[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
+
 temporalParam.sampleFrequency=Fs;
 
 %% Separated signals
@@ -95,7 +101,7 @@ end
 
 %% Damping
 accEnv=envelope(abs(acc),round(mean(0.5./estimatedFrequency*Fs)),'peak');
-temporalParam.damp=dampingEstimation(accEnv(min(tPeaks(:,1)):end,:),'Fs',Fs,'isIMF',1);
+temporalParam.damp=dampingEstimation(accEnv(min(tPeaks(:,1)):end,:),'Fs',Fs,'isIMF',1,'delay2peak',0.1);
 
 
 %% PLOT

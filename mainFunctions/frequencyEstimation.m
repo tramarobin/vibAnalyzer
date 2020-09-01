@@ -109,15 +109,19 @@ if plotFig==1
     [~,meanFrequency4plot]=min(abs(meanFrequency-f));
     meanFrequency4plot=[meanFrequency4plot-1 meanFrequency4plot meanFrequency4plot+1];
     
-    if size(energies,2)>1
+    if size(energies,2)>1 & size(energies,2)<4
         plot(f,energy,'k','HandleVisibility','on'); hold on
         plot(f,energies(:,1),'k-.','HandleVisibility','on');
         plot(f,energies(:,2),'k-.','HandleVisibility','off');
         if size(energies,2)>2
             plot(f,energies(:,3),'k-.','HandleVisibility','off');
         end
-    else
+    elseif size(energies,2)==1
         plot(f,energy,'k','HandleVisibility','off'); hold on
+    else
+        plot(f,energy(:,1),'k','HandleVisibility','on'); hold on
+        plot(f,energies(:,1),'-.k','HandleVisibility','on');
+        plot(f,energies(:,2:end),'-.k','HandleVisibility','off');
     end
     xlim([min(f) max(f)])
     xlabel('Frequency (Hz)');
@@ -129,7 +133,11 @@ if plotFig==1
     if size(energies,2)==1
         legend({['Median frequency = ' sprintf('%0.1f',medianFrequency) ' Hz'],['Mean frequency = ' sprintf('%0.1f',meanFrequency) ' Hz']},'Box','off')
     else
-        legend({'norm of signals','signals from different axes',['Median frequency = ' sprintf('%0.2f',medianFrequency) ' Hz'],['Mean frequency = ' sprintf('%0.2f',meanFrequency) ' Hz']},'Box','off')
+        if isIMF==1
+            legend({'sum of sub signals','sub signals',['Median frequency = ' sprintf('%0.2f',medianFrequency) ' Hz'],['Mean frequency = ' sprintf('%0.2f',meanFrequency) ' Hz']},'Box','off')
+        else
+            legend({'norm of signals','signals from different axes',['Median frequency = ' sprintf('%0.2f',medianFrequency) ' Hz'],['Mean frequency = ' sprintf('%0.2f',meanFrequency) ' Hz']},'Box','off')
+        end
     end
     legPos=get(legend,'position');
     set(legend,'position',[legPos(1) legPos(2)-0.1 legPos(3:4)])

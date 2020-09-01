@@ -110,7 +110,7 @@ if plotFig==1
     ylim(1.1*yLimits);
     box off
     
-    subplot(222)
+    subplot(223)
     if size(acc,2)==1
         displayCoeffMap(intCoefficients{1},intFreq,newTime,'colorbarOk',colorbarOk,'newFig',0,'titleFig','Amplitude in the time-frequency domain')
     else
@@ -120,7 +120,7 @@ end
 
 % Frequencial analysis
 if plotFig==1
-    subplot(223)
+    subplot(222)
 end
 cwtParam.freq=frequencyEstimation(intFreq,energy,'plotfig',plotFig,'isIMF',isIMF,'titleFig','Amplitude in the frequency domain');
 
