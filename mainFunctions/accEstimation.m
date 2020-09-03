@@ -1,3 +1,6 @@
+% estimates the characteristics of the vibrations by fitting a model and return these characteristics as output
+% model = amplitude*exp(-damping.*t).*sin(2*pi*frequency.*t+phase);
+
 function modelParam=accEstimation(acc,varargin)
 p = inputParser;
 addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
