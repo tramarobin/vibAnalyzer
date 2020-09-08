@@ -1,7 +1,7 @@
 % Compute the continuous wavelet transform using a filterbank of morse
 % (3,60) wavelets with 48 voices per octave
-% the signal, if you want avoid reflexion, 
-% Compute the map of coefficients (.map) 
+% the signal, if you want avoid reflexion,
+% Compute the map of coefficients (.map)
 % estimate frequency parameters (.freq) and damping (.damp)
 % for one or several axes (.sep(:,axis)) and the norm (.norm)
 
@@ -54,6 +54,10 @@ delay2peak=p.Results.delay2peak;
 %% Transpose if not the right dimension
 acc=transposeColmunIfNot(acc);
 
+%% reflection if signal cut at the impact
+if isempty(preImpact)
+    reflection=1;
+end
 %% Time analyzed
 [newFs,preImpactPoints,postImpactPoints,newPreImpactPoints,newPostImpactPoints]=defineTime(acc,Fs,newFs,preImpact,postImpact);
 
@@ -92,7 +96,7 @@ end
 %% PLOT and variables extraction
 if plotFig==1
     if newFig==1
-    figure('units','normalized','outerposition',[0 0 1 1],'visible','on')
+        figure('units','normalized','outerposition',[0 0 1 1],'visible','on')
     end
 end
 
@@ -100,7 +104,7 @@ end
 if plotFig==1
     newTime=1/newFs:1/newFs:newPostImpactPoints/newFs;
     time=1/Fs:1/Fs:postImpactPoints/Fs;
-
+    
     subplot(221)
     plot(time,acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:),'k')
     title('Acceleration signal in time domain')
@@ -126,10 +130,10 @@ cwtParam.freq=frequencyEstimation(intFreq,energy,'plotfig',plotFig,'isIMF',isIMF
 
 % Time domain analysis (damping)
 if damping==1
-if plotFig==1
-    subplot(224)
-end
-cwtParam.damp=dampingEstimation(power,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak,'titleFig','Amplitude in the time domain');
+    if plotFig==1
+        subplot(224)
+    end
+    cwtParam.damp=dampingEstimation(power,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak,'titleFig','Amplitude in the time domain');
 end
 
 end

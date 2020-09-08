@@ -16,7 +16,7 @@ if reflection==0
 else
     Fs=fb.SamplingFrequency;
     originalSize=size(acc,1);
-    paddingSize=2.048*Fs-size(acc,1);
+    paddingSize=round(2.048*Fs)-size(acc,1);
     acc=[zeros(paddingSize,size(acc,2)); acc(end:-1:1,:); acc; zeros(paddingSize,size(acc,2))]; % reflect the signal
     for i=1:size(acc,2)
         cfs=wt(fb,acc(:,i));

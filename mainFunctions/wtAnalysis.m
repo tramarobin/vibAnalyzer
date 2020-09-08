@@ -30,7 +30,7 @@ addParameter(p,'supFreq',[],@isnumeric); % Freq max analyzed (default = max of w
 addParameter(p,'plotFig',0,@isnumeric); % 1 to plot figure
 addParameter(p,'newFig',1,@isnumeric); % create new fig
 addParameter(p,'damping',1,@isnumeric); % 0 to not perform damping estimation
-addParameter(p,'delay2peak',0.01,@isnumeric); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
+addParameter(p,'delay2peak',0.1,@isnumeric); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
 
 parse(p,varargin{:});
 Fs=p.Results.Fs;
@@ -139,23 +139,35 @@ for k=1:size(acc,2) % each axis
     
     if plotFig==1
         time=1/Fs:1/Fs:size(acc4damp,1)/Fs;
-        subplot(3,size(accPlot,2)+1,k)
+        if size(acc,2)>1
+            subplot(3,size(accPlot,2)+1,k)
+        else
+            subplot(3,size(accPlot,2),k)
+        end
         plot(time,accPlot(:,k),'k')
         title(['Acceleration of axis # ' num2str(k)])
         xlabel('Time (s)');
         ylabel('Amplitude (m\cdots^-^2)')
         box off
         
-        subplot(3,size(acc,2)+1,size(acc,2)+1+k)
+        if size(acc,2)>1
+            subplot(3,size(acc,2)+1,size(acc,2)+1+k)
+        else
+            subplot(3,size(accPlot,2),k+1)
+        end
         plot(time,sum(power,2),'k'); hold on
         plot(time,power,'k-.')
         title('Wavelet power')
         xlabel('Time (s)');
-        ylabel('Amplitude (u.a)')
+        ylabel('Amplitude (a.u)')
         legend('sum of wavelets power','wavelets power','box','off')
         box off
         
-        subplot(3,size(acc,2)+1,2*size(acc,2)+2+k)
+        if size(acc,2)>1
+            subplot(3,size(acc,2)+1,2*size(acc,2)+2+k)
+        else
+            subplot(3,size(accPlot,2),k+2)
+        end
     end
     
     % damping estimation
@@ -205,7 +217,7 @@ if size(acc,2)>1
         plot(time,power,'k-.')
         title('Norm of wavelets power')
         xlabel('Time (s)');
-        ylabel('Amplitude (u.a)')
+        ylabel('Amplitude (a.u)')
         legend('sum of wavelets power','wavelets power','box','off')
         box off
         
