@@ -94,14 +94,19 @@ if plotFig==1
     if newFig==1
         figure('units','normalized','outerposition',[0 0 1 1],'visible','on')
     end
-    subplot(211)
+    subplot(121)
+    plot(1/Fs:1/Fs:size(acc,1)/Fs,acc,'k')
+    xlabel('Time (s)')
+    ylabel('Acceleration (m\cdots^-^2)')
+    title('Acceleration in time domain')
+    box off
+    
+    subplot(122)
 end
 fftParam.normalizedFT=frequencyEstimation(f,nFT,'plotFig',plotFig,'titleFig','normalized FT','isIMF',isIMF);
 
-if plotFig==1
-    subplot(212)
-end
-fftParam.PSD=frequencyEstimation(f,PSD,'plotFig',plotFig,'units','m^2\cdots^-^4/Hz','titleFig','PSD','isIMF',isIMF);
+
+fftParam.PSD=frequencyEstimation(f,PSD,'units','m^2\cdots^-^4/Hz','titleFig','PSD','isIMF',isIMF);
 
 fftParam.FT=frequencyEstimation(f,FT,'isIMF',isIMF);
 

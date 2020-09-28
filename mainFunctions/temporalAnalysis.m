@@ -138,13 +138,13 @@ if plotFig==1
         text(tMinAcc/Fs+0.02*max(time),minAcc,['Peak deceleration = ' sprintf('%0.1f',minAcc) ' m\cdots^-^2 at t = ' sprintf('%0.3f',tMinAcc/Fs) ' s'])
         text(tMaxAcc/Fs+0.02*max(time),maxAcc,['Peak acceleration = ' sprintf('%0.1f',maxAcc) ' m\cdots^-^2 at t = ' sprintf('%0.3f',tMaxAcc/Fs) ' s'])
         if tMaxAcc<tMinAcc
-            text(max([tMaxAcc tMinAcc])/Fs,maxAcc-0.2*peak2peak,['Peak to peak amplitude = ' sprintf('%0.1f',peak2peak) ' m\cdots^-^2'])
-            text(max([tMaxAcc tMinAcc])/Fs,maxAcc-0.3*peak2peak,['Time between peaks = ' sprintf('%0.3f',tp2p) ' s'])
-            text(max([tMaxAcc tMinAcc])/Fs,maxAcc-0.4*peak2peak,['Estimated frequency = ' sprintf('%0.1f',estimatedFrequency) ' Hz'])
+            text(1.5*max([tMaxAcc tMinAcc])/Fs,maxAcc-0.1*peak2peak,['Peak to peak amplitude = ' sprintf('%0.1f',peak2peak) ' m\cdots^-^2'])
+            text(1.5*max([tMaxAcc tMinAcc])/Fs,maxAcc-0.15*peak2peak,['Time between peaks = ' sprintf('%0.3f',tp2p) ' s'])
+            text(1.5*max([tMaxAcc tMinAcc])/Fs,maxAcc-0.2*peak2peak,['Estimated frequency = ' sprintf('%0.1f',estimatedFrequency) ' Hz'])
         else
-            text(max([tMaxAcc tMinAcc])/Fs,minAcc+0.2*peak2peak,['Peak to peak amplitude = ' sprintf('%0.1f',peak2peak) ' m\cdots^-^2'])
-            text(max([tMaxAcc tMinAcc])/Fs,minAcc+0.3*peak2peak,['Time between peaks = ' sprintf('%0.3f',tp2p) ' s'])
-            text(max([tMaxAcc tMinAcc])/Fs,minAcc+0.4*peak2peak,['Estimated frequency = ' sprintf('%0.1f',estimatedFrequency) ' Hz'])
+            text(1.5*max([tMaxAcc tMinAcc])/Fs,minAcc+0.1*peak2peak,['Peak to peak amplitude = ' sprintf('%0.1f',peak2peak) ' m\cdots^-^2'])
+            text(1.5*max([tMaxAcc tMinAcc])/Fs,minAcc+0.15*peak2peak,['Time between peaks = ' sprintf('%0.3f',tp2p) ' s'])
+            text(1.5*max([tMaxAcc tMinAcc])/Fs,minAcc+0.2*peak2peak,['Estimated frequency = ' sprintf('%0.1f',estimatedFrequency) ' Hz'])
         end
         
         

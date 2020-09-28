@@ -54,6 +54,9 @@ if plotFig==1
         plot(time,[acc(:,i),modelParam.modelAcc(:,i)])
         legend({'Original signal','Modeled signal'},'box','off')
         box off
+        xlabel('Time (s)')
+        ylabel('Acceleration (m\cdots^-^2)')
+        
     end
     
 end

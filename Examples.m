@@ -25,7 +25,7 @@ acc=ACC(:,2);
 accParam=vibAnalyzer(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig);
 
 % cwt with morse wavelets
-cwtParam=cwtAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
+cwtParam=cwtAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1,'reflection',1);
 
 % wt with cauchy wavelets (VVT/Enders)
 wtParam=wtAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
@@ -40,7 +40,7 @@ emdParam=emdAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact'
 peemdParam=peemdAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
 
 % temporal anaylis 
-temporalParam=temporalAnalysis(acc,'Fs',Fs,'plotFig',plotFig,'newFig',1); % might consider filtering the signal as no frequency range are set
+temporalParam=temporalAnalysis(acc,'Fs',Fs,'preImpact',preImpact,'postImpact',postImpact,'plotFig',plotFig,'newFig',1); % might consider filtering the signal as no frequency range are set
 
 % estimation
 estimationParam=accEstimation(acc,'Fs',Fs,'preImpact',preImpact,'postImpact',postImpact,'plotFig',plotFig,'newFig',1); % might consider filtering the signal as no frequency range are set
