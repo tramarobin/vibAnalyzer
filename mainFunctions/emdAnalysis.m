@@ -44,12 +44,12 @@ newFs=p.Results.newFs;
 reflection=p.Results.reflection;
 
 acc=transposeColmunIfNot(acc);
-[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+[~,preImpactPoints,postImpactPoints,~,~,acc]=defineTime(acc,Fs,Fs,preImpact,postImpact,0);
 acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 
 %% IMF and FFT
 for i=1:size(acc,2)
-    emdParam.IMF{i}=emd(acc(:,i),'Display',0);
+    emdParam.IMF{i}=emd(acc(:,i),'Display',0,'MaxEnergyRatio',5);
     
     if ~isempty(infFreq) || ~isempty(supFreq)
         fftParam=fftAnalysis(emdParam.IMF{i},'padding',padding,'Fs',Fs);
@@ -84,11 +84,15 @@ if plotFig==1
     time=1/Fs:1/Fs:size(acc,1)/Fs;
     for i=1:numel(emdParam.FFT)
         subplot(2,numel(emdParam.FFT),i)
-        plot(time,acc(:,i),'k--'); hold on
-        plot(time,sum(emdParam.IMF{i},2),'k');
+        plot(time,acc(:,i),'k','linewidth',1.2); hold on
+        plot(time,sum(emdParam.IMF{i},2),'k--','linewidth',1.2);
         plot(time,emdParam.IMF{i},'k-.');
         legend({'Original signal','sum of IMFs','IMFs'},'box','off')
         title(['IMF reconstruction for axe #' num2str(i)])
+        box off
+        xlabel('Time (s)')
+        ylabel('Acceleration (m\cdots^-^2)')
+        
         subplot(2,numel(emdParam.FFT),numel(emdParam.FFT)+i)
         
         f=emdParam.FFT{i}.normalizedFT.f;
@@ -110,7 +114,7 @@ if plotFig==1
         meanFrequency4plot=[meanFrequency4plot-1 meanFrequency4plot meanFrequency4plot+1];
         
         if size(energies,2)>1
-            plot(f,energy,'k','HandleVisibility','on'); hold on
+            plot(f,energy,'k--','HandleVisibility','on','linewidth',1.2); hold on
             plot(f,energies(:,1),'k-.','HandleVisibility','on');
             plot(f,energies(:,2:end),'k-.','HandleVisibility','off');
         else

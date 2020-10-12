@@ -59,7 +59,7 @@ if isempty(preImpact)
     reflection=1;
 end
 %% Time analyzed
-[newFs,preImpactPoints,postImpactPoints,newPreImpactPoints,newPostImpactPoints]=defineTime(acc,Fs,newFs,preImpact,postImpact);
+[newFs,preImpactPoints,postImpactPoints,newPreImpactPoints,newPostImpactPoints,acc]=defineTime(acc,Fs,newFs,preImpact,postImpact,reflection);
 
 %% Filterbank and frequency range analyzed
 [fb,f,infLim,supLim,infFreq,supFreq,intFreq,indIntInfLim,indIntSupLim]=defineFilterBank(acc,Fs,interpFreq,fb,infFreq,supFreq,reflection);

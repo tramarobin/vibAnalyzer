@@ -50,7 +50,7 @@ nRealisations=p.Results.nRealisations;
 maxIterations=p.Results.maxIterations;
 
 acc=transposeColmunIfNot(acc);
-[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+[~,preImpactPoints,postImpactPoints,~,~,acc]=defineTime(acc,Fs,Fs,preImpact,postImpact,0);
 acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 
 %% IMF and FFT

@@ -1,7 +1,7 @@
 % estimates the characteristics of the vibrations by fitting a model and return these characteristics as output
 % model = amplitude*exp(-damping.*t).*sin(2*pi*frequency.*t+phase);
 
-function modelParam=accEstimation(acc,varargin)
+function modelParam=accEstimationOptiF(acc,varargin)
 p = inputParser;
 addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure (for one axis, or the norm)
@@ -23,19 +23,34 @@ acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 options = optimoptions('fmincon','Display','off');
 
 for i=1:size(acc,2)
-    [optiParam, err]=fmincon(@(optiP)accMinimisation(acc(:,i),Fs,optiP),...
-        [0 0 0 0],[],[],[],[],[-inf 0 0 0],[],[],options);
+    LB=[-inf 0 0 0];
+    for k=1:10
+        [optiParam{k}, err(k)]=fmincon(@(optiP)accMinimisationOptiF(acc(:,i),Fs,k,optiP),...
+            [zeros(1,4*k)],[],[],[],[],repmat(LB,1,k),[],[],options);
+    end
+    errP=err.*(1:10);
+    [errP,nf]=min(errP);
+    optiParam=optiParam{nf};
+    err=err(nf);
     
     t=transpose(1/Fs:1/Fs:size(acc,1)/Fs);
-    modelAcc=optiParam(1)*exp(-optiParam(2).*t).*sin(2*pi*optiParam(3).*t+optiParam(4));
+    for j=1:numel(optiParam)/4
+        subModelAcc(:,j)=(optiParam(4*(j-1)+1).*exp(-optiParam(4*(j-1)+2).*t)).*sin((2.*pi.*optiParam(4*(j-1)+3).*t)+optiParam(4*(j-1)+4));
+    end
+    
+    modelAcc=sum(subModelAcc,2);
     
     modelParam.measuredAcc(:,i)=acc(:,i);
     modelParam.modelAcc(:,i)=modelAcc;
-    modelParam.amplitude(i)=optiParam(1);
-    modelParam.damping(i)=optiParam(2);
-    modelParam.frequency(i)=optiParam(3);
-    modelParam.phase(i)=optiParam(4);
+    modelParam.subModelAcc{i}=subModelAcc;
     modelParam.error(i)=err;
+    for j=1:numel(optiParam)/4
+        modelParam.amplitude(i,j)=optiParam(4*(j-1)+1);
+        modelParam.damping(i,j)=optiParam(4*(j-1)+2);
+        modelParam.frequency(i,j)=optiParam(4*(j-1)+3);
+        modelParam.phase(i,j)=optiParam(4*(j-1)+4);
+    end
+    clear optiParam err subModelAcc
     
 end
 
@@ -51,8 +66,9 @@ if plotFig==1
     
     for i=1:size(acc,2)
         subplot(size(acc,2),1,i)
-        plot(time,[acc(:,i),modelParam.modelAcc(:,i)])
-        legend({'Original signal','Modeled signal'},'box','off')
+        plot(time,[acc(:,i),modelParam.modelAcc(:,i)],'linewidth',1.2); hold on
+        plot(time, modelParam.subModelAcc{i},'-.k')
+        legend({'Original signal','Modeled signal','subModel sinuses'},'box','off')
         box off
         xlabel('Time (s)')
         ylabel('Acceleration (m\cdots^-^2)')

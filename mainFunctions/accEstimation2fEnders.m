@@ -1,7 +1,7 @@
 % estimates the characteristics of the vibrations by fitting a model and return these characteristics as output
 % model = amplitude*exp(-damping.*t).*sin(2*pi*frequency.*t+phase);
 
-function modelParam=accEstimation(acc,varargin)
+function modelParam=accEstimation2fEnders(acc,varargin)
 p = inputParser;
 addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure (for one axis, or the norm)
@@ -21,20 +21,22 @@ acc=transposeColmunIfNot(acc);
 acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 
 options = optimoptions('fmincon','Display','off');
-
 for i=1:size(acc,2)
-    [optiParam, err]=fmincon(@(optiP)accMinimisation(acc(:,i),Fs,optiP),...
+    
+    [optiParam, err]=fmincon(@(optiP)accMinimisation2fEnders(acc(:,i),Fs,optiP),...
         [0 0 0 0],[],[],[],[],[-inf 0 0 0],[],[],options);
     
+    f=mean([optiParam(3) optiParam(4)]);
+    df=diff([optiParam(3) optiParam(4)]);
+    
     t=transpose(1/Fs:1/Fs:size(acc,1)/Fs);
-    modelAcc=optiParam(1)*exp(-optiParam(2).*t).*sin(2*pi*optiParam(3).*t+optiParam(4));
+    modelAcc=(2*optiParam(1).*sin((2*pi*f.*t)).*cos((2*pi*(df/2).*t)).*exp(-optiParam(2).*t));
     
     modelParam.measuredAcc(:,i)=acc(:,i);
     modelParam.modelAcc(:,i)=modelAcc;
     modelParam.amplitude(i)=optiParam(1);
     modelParam.damping(i)=optiParam(2);
-    modelParam.frequency(i)=optiParam(3);
-    modelParam.phase(i)=optiParam(4);
+    modelParam.frequency(i,:)=optiParam([3 4]);
     modelParam.error(i)=err;
     
 end

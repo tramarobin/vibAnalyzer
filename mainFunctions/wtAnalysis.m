@@ -46,7 +46,7 @@ delay2peak=p.Results.delay2peak;
 acc=transposeColmunIfNot(acc);
 
 %% Cut and mirror the signal
-[~,preImpactPoints,postImpactPoints,~,~]=defineTime(acc,Fs,Fs,preImpact,postImpact);
+[~,preImpactPoints,postImpactPoints,~,~,acc]=defineTime(acc,Fs,Fs,preImpact,postImpact,0);
 acc=acc(preImpactPoints:preImpactPoints+postImpactPoints-1,:);
 originalSize=size(acc,1);
 paddingSize=2^(nextpow2(2*originalSize));

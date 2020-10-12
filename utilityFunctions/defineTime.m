@@ -1,4 +1,4 @@
-function [newFs,preImpactPoints,postImpactPoints,newPreImpactPoints,newPostImpactPoints]=defineTime(acc,Fs,newFs,preImpact,postImpact)
+function [newFs,preImpactPoints,postImpactPoints,newPreImpactPoints,newPostImpactPoints,acc]=defineTime(acc,Fs,newFs,preImpact,postImpact,reflection)
 
 
 if isempty(newFs)
@@ -23,6 +23,14 @@ if isempty(postImpact)
 else
     postImpactPoints=postImpact*Fs;
     newPostImpactPoints=postImpact*newFs;
+end
+
+if reflection==1
+    if preImpactPoints>1
+    acc=acc(preImpactPoints+1:end,:);
+    end
+    preImpactPoints=1;
+    newPreImpactPoints=1;
 end
 
 end
