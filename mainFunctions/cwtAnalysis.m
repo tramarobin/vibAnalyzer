@@ -129,11 +129,10 @@ end
 cwtParam.freq=frequencyEstimation(intFreq,energy,'plotfig',plotFig,'isIMF',isIMF,'titleFig','Amplitude in the frequency domain');
 
 % Time domain analysis (damping)
-if damping==1
     if plotFig==1
         subplot(224)
     end
-    cwtParam.damp=dampingEstimation(power,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak,'titleFig','Amplitude in the time domain');
-end
+    cwtParam.damp=dampingEstimation(power,'calculDamping',damping,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak,'titleFig','Amplitude in the time domain');
+
 
 end

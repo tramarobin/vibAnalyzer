@@ -18,6 +18,7 @@ function dampingParam=dampingEstimation(power,varargin)
 
 p = inputParser;
 addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
+addParameter(p,'calculDamping',1,@isnumeric); % calculation of damping
 addParameter(p,'powerLimits',0.1,@isnumeric); % Percentage of power at which the LSminimisation stop
 addParameter(p,'delay2peak',[],@isnumeric); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure (for one axis, or the norm)
@@ -28,6 +29,7 @@ addParameter(p,'units','m\cdots^-^2/s',@ischar); % units
 
 parse(p,varargin{:});
 Fs=p.Results.Fs;
+calculDamping=p.Results.calculDamping;
 powerLimits=p.Results.powerLimits;
 delay2peak=p.Results.delay2peak;
 plotFig=p.Results.plotFig;
@@ -53,6 +55,7 @@ for i=1:size(power,2)
         maxPos=maxPos+delay2peak1(1)*Fs-1;
     end
     
+    if calculDamping==1
     Diff_Puissance=diff(power);
     if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
         [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
@@ -83,6 +86,12 @@ for i=1:size(power,2)
         [Damping_property,Damp_err]=fmincon(@(d)dampingMinimisation(Pdec,t,d),10,[],[],[],[],0,1000,[],options);
     else
         Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan;
+    end
+    
+    else
+        
+    Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; settlingTime=nan;
+       
     end
     dampingParam.sep.dampingCoefficient(i)=Damping_property;
     dampingParam.sep.settlingTime(i)=settlingTime;
@@ -148,7 +157,7 @@ if size(powers,2)>1
     dampingParam.norm.dampingCoefficient=Damping_property;
     dampingParam.norm.settlingTime=settlingTime;
     dampingParam.norm.maxAmplitude=Maximal_power;
-    dampingParam.norm.totalAmplitude=sum(power);
+    dampingParam.norm.totalAmplitude=trapz(power)/Fs;
     dampingParam.norm.indices.maxPos=maxPos;
     dampingParam.norm.indices.dampStart=Damp_start;
     dampingParam.norm.indices.dampEnd=Damp_end;
@@ -183,6 +192,7 @@ if plotFig==1
         plot(time,powers(:,2:end),'-.k','HandleVisibility','off');
     end
     scatter(time(maxPos),Maximal_power,'k+','HandleVisibility','off')
+    if calculDamping==1
     if Damp_start<numel(time)
         scatter(time(Damp_start),power(Damp_start),'kv')
         if Damp_end<=size(time,2)
@@ -193,11 +203,12 @@ if plotFig==1
             warning('increase time post impact to see complete damping on the figure')
         end
     end
-    
+    end
     text(time(maxPos)+0.05*max(time),Maximal_power,['Peak amplitude = ' sprintf('%0.1f',Maximal_power) ' ' units ' at t = ' sprintf('%3.3f',maxPos/Fs) ' s'])
+    if calculDamping==1
     text(0.02*max(time),0.2*max(power),['Damping coefficient = ' sprintf('%3.1f',Damping_property) ' s^-^1'])
     text(0.02*max(time),0.1*max(power),['Settling time = ' sprintf('%3.3f',settlingTime) ' s'])
-    
+    end
     xlabel('Time (s)');
     ylabel(['Amplitude (' units ')'])
     title(titleFig)
