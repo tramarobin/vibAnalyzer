@@ -26,7 +26,7 @@ else
  
     for i=1:size(acc,2)
         cfs=wt(fb,acc(:,i));
-        axisCoefficients{i}=abs(cfs(:,fb.SignalLength/2+1:fb.SignalLength/2+1+originalSize));
+        axisCoefficients{i}=abs(cfs(:,fb.SignalLength/2+1:fb.SignalLength/2+originalSize));
     end
     
 end

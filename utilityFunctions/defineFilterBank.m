@@ -1,16 +1,16 @@
 function [fb,f,infLim,supLim,infFreq,supFreq,intFreq,indIntInfLim,indIntSupLim]=defineFilterBank(acc,Fs,interpFreq,fb,infFreq,supFreq,reflection)
 
 if reflection==0
-    if size(acc,1)>round(4.096*Fs)
+    if size(acc,1)>round(2.048*Fs)
         signalLength=size(acc,1);
     else
-        signalLength=round(4.096*Fs);
+        signalLength=round(2.048*Fs);
     end
 else
-    if size(acc,1)>round(4.096*Fs)
+    if size(acc,1)>round(2.048*Fs)
         signalLength=2*size(acc,1);
     else
-        signalLength=2*round(4.096*Fs);
+        signalLength=2*round(2.048*Fs);
     end
 end
 
