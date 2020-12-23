@@ -31,7 +31,7 @@ addParameter(p,'colorbarOk',1,@isnumeric); % 0 dont plot colorbar
 addParameter(p,'plotFig',0,@isnumeric); % 1 to plot figure
 addParameter(p,'newFig',1,@isnumeric); % create new fig
 addParameter(p,'isIMF',0,@isnumeric); % sum the maps instead of norm if IMF
-addParameter(p,'reflection',0,@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2 seconds on each side centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
+addParameter(p,'reflection',[],@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2 seconds on each side centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
 addParameter(p,'damping',1,@isnumeric); % 0 to not perform damping estimation
 addParameter(p,'delay2peak',[],@isnumeric); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
 
@@ -55,9 +55,14 @@ delay2peak=p.Results.delay2peak;
 acc=transposeColmunIfNot(acc);
 
 %% reflection if signal cut at the impact
-if isempty(preImpact)
-    reflection=1;
+if isempty(reflection)
+    if isempty(preImpact)
+        reflection=1;
+    else
+        reflection=0;
+    end
 end
+
 %% Time analyzed
 [newFs,preImpactPoints,postImpactPoints,newPreImpactPoints,newPostImpactPoints,acc]=defineTime(acc,Fs,newFs,preImpact,postImpact,reflection);
 
@@ -129,10 +134,10 @@ end
 cwtParam.freq=frequencyEstimation(intFreq,energy,'plotfig',plotFig,'isIMF',isIMF,'titleFig','Amplitude in the frequency domain');
 
 % Time domain analysis (damping)
-    if plotFig==1
-        subplot(224)
-    end
-    cwtParam.damp=dampingEstimation(power,'calculDamping',damping,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak,'titleFig','Amplitude in the time domain');
+if plotFig==1
+    subplot(224)
+end
+cwtParam.damp=dampingEstimation(power,'calculDamping',damping,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak,'titleFig','Amplitude in the time domain');
 
 
 end

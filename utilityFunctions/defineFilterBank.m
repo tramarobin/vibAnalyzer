@@ -1,32 +1,76 @@
 function [fb,f,infLim,supLim,infFreq,supFreq,intFreq,indIntInfLim,indIntSupLim]=defineFilterBank(acc,Fs,interpFreq,fb,infFreq,supFreq,reflection)
 
-if size(acc,1)>round(4.096*Fs)
-    signalLength=size(acc,1);
+if reflection==0
+    if size(acc,1)>round(4.096*Fs)
+        signalLength=size(acc,1);
+    else
+        signalLength=round(4.096*Fs);
+    end
 else
-    signalLength=round(2.048*Fs);
+    if size(acc,1)>round(4.096*Fs)
+        signalLength=2*size(acc,1);
+    else
+        signalLength=2*round(4.096*Fs);
+    end
 end
 
+
 %% FB
-if reflection==0
-    if isempty (fb)
-        [minfreq,maxfreq] = cwtfreqbounds(size(acc,1),Fs,...
-            'VoicesPerOctave',48);
-    else
-        [minfreq,maxfreq] = cwtfreqbounds(size(acc,1),Fs,...
-            'WaveletParameters',fb.WaveletParameters,...
-            'VoicesPerOctave',fb.VoicesPerOctave);
-    end
+if isempty(fb)
+    fb=cwtfilterbank(...
+        'SamplingFrequency',Fs,...
+        'SignalLength',signalLength,...
+        'VoicesPerOctave',48);
 else
-    if isempty (fb)
-        
-        [minfreq,maxfreq] = cwtfreqbounds(2*signalLength,Fs,...
-            'VoicesPerOctave',48);
-    else % double padded at 2048 = 4.096*Fs points
-        [minfreq,maxfreq] = cwtfreqbounds(2*signalLength,Fs,...
-            'WaveletParameters',fb.WaveletParameters,...
-            'VoicesPerOctave',fb.VoicesPerOctave);
+    if fb.SignalLength~=signalLength
+        if ~isempty(fb.WaveletParameters)
+            fb2=cwtfilterbank(...
+                'SamplingFrequency',Fs,...
+                'SignalLength',signalLength,...
+                'VoicesPerOctave',fb.VoicesPerOctave,...
+                'Wavelet',fb.Wavelet,...
+                'WaveletParameters',fb.WaveletParameters);
+        else
+            fb2=cwtfilterbank(...
+                'SamplingFrequency',Fs,...
+                'SignalLength',signalLength,...
+                'VoicesPerOctave',fb.VoicesPerOctave,...
+                'Wavelet',fb.Wavelet);
+        end
+        fb=fb2; clear fb2
+
     end
 end
+
+%% FREQ
+f=centerFrequencies(fb);
+[minfreq maxfreq]=cwtfreqbounds(fb.SignalLength,fb.SamplingFrequency,'Wavelet',fb.Wavelet);
+
+infLim=find(f<=infFreq-interpFreq);
+if isempty(infLim)
+    infLim=numel(f);
+elseif minfreq==infFreq
+    infLim=infLim(1);
+else
+    infLim=infLim(1)+1;
+end
+if infLim>numel(f)
+    infLim=numel(f);
+end
+
+supLim=find(f>=supFreq+interpFreq);
+if isempty(supLim)
+    supLim=1;
+elseif maxfreq==supFreq
+    supLim=supLim(end);
+else
+    if supLim>1
+        supLim=supLim(end)-1;
+    else
+        supLim=supLim(end);
+    end
+end
+
 
 if isempty(infFreq)
     if minfreq>1
@@ -64,90 +108,9 @@ if ~isempty(supFreq)
     end
 end
 
-if reflection==0
-    if isempty(fb)
-        fb=cwtfilterbank(...
-            'SamplingFrequency',Fs,...
-            'SignalLength',size(acc,1),...
-            'FrequencyLimits',[minfreq,maxfreq],...
-            'VoicesPerOctave',48);
-    elseif fb.SignalLength~=size(acc,1)
-        [minfreq,maxfreq] = cwtfreqbounds(size(acc,1),Fs,...
-            'WaveletParameters',fb.WaveletParameters,...
-            'VoicesPerOctave',fb.VoicesPerOctave);
-        if strcmp(fb.Wavelet,'morse')
-            fb2=cwtfilterbank(...
-                'SamplingFrequency',Fs,...
-                'SignalLength',size(acc,1),...
-                'WaveletParameters',fb.WaveletParameters,...
-                'VoicesPerOctave',fb.VoicesPerOctave,...
-                'FrequencyLimits',[minfreq,maxfreq]);
-        else
-            fb2=cwtfilterbank(...
-                'SamplingFrequency',Fs,...
-                'SignalLength',size(acc,1),...
-                'VoicesPerOctave',fb.VoicesPerOctave,...
-                'FrequencyLimits',[minfreq,maxfreq]);
-        end
-        fb=fb2;
-    end
-else
-    if isempty(fb)
-        fb=cwtfilterbank(...
-            'SamplingFrequency',Fs,...
-            'SignalLength',2*signalLength,...
-            'FrequencyLimits',[minfreq,maxfreq],...
-            'VoicesPerOctave',48);
-    elseif fb.SignalLength~=round(4.096*Fs)
-        [minfreq,maxfreq] = cwtfreqbounds(2*signalLength,Fs,...
-            'WaveletParameters',fb.WaveletParameters,...
-            'VoicesPerOctave',fb.VoicesPerOctave);
-        if strcmp(fb.Wavelet,'morse')
-            fb2=cwtfilterbank(...
-                'SamplingFrequency',Fs,...
-                'SignalLength',2*signalLength,...
-                'WaveletParameters',fb.WaveletParameters,...
-                'VoicesPerOctave',fb.VoicesPerOctave,...
-                'FrequencyLimits',[minfreq,maxfreq]);
-        end
-        fb2=cwtfilterbank(...
-            'SamplingFrequency',Fs,...
-            'SignalLength',2*signalLength,...
-            'VoicesPerOctave',fb.VoicesPerOctave,...
-            'FrequencyLimits',[minfreq,maxfreq]);
-        fb=fb2;
-    end
-end
 
 
-%% FREQ
 
-f=centerFrequencies(fb);
-
-infLim=find(f<=infFreq-interpFreq);
-if isempty(infLim)
-    infLim=numel(f);
-elseif minfreq==infFreq
-    infLim=infLim(1);
-else
-    infLim=infLim(1)+1;
-end
-if infLim>numel(f)
-    infLim=numel(f);
-end
-
-supLim=find(f>=supFreq+interpFreq);
-if isempty(supLim)
-    supLim=1;
-elseif maxfreq==supFreq
-    supLim=supLim(end);
-else
-    if supLim>1
-        supLim=supLim(end)-1;
-    else
-        supLim=supLim(end);
-    end
-end
 
 % infFreq=ceil(f(infLim)/interpFreq)*interpFreq;
 % supFreq=floor(f(supLim)/interpFreq)*interpFreq;

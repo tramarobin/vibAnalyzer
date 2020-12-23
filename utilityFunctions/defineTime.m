@@ -32,5 +32,6 @@ if reflection==1
     preImpactPoints=1;
     newPreImpactPoints=1;
 end
-
+% newPreImpactPoints=ceil(newPreImpactPoints);
+% newPostImpactPoints=ceil(newPostImpactPoints);
 end

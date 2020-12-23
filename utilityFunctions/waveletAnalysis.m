@@ -6,21 +6,27 @@ parse(p,varargin{:});
 isIMF=p.Results.isIMF;
 reflection=p.Results.reflection;
 
+%% padding
+originalSize=size(acc,1);
+if reflection==0
+    paddingSize=fb.SignalLength-originalSize;
+    acc=[acc; zeros(paddingSize,size(acc,2))];
+else
+    paddingSize=(fb.SignalLength-2*originalSize)/2;
+    acc=[zeros(paddingSize,size(acc,2)); acc(end:-1:1,:); acc; zeros(paddingSize,size(acc,2))]; % reflect the signal
+end
 %% each axis
 if reflection==0
     for i=1:size(acc,2)
         cfs=wt(fb,acc(:,i));
-        axisCoefficients{i}=abs(cfs);
+        axisCoefficients{i}=abs(cfs(:,1:originalSize));
     end
     
 else
-    Fs=fb.SamplingFrequency;
-    originalSize=size(acc,1);
-    paddingSize=round(2.048*Fs)-size(acc,1);
-    acc=[zeros(paddingSize,size(acc,2)); acc(end:-1:1,:); acc; zeros(paddingSize,size(acc,2))]; % reflect the signal
+ 
     for i=1:size(acc,2)
         cfs=wt(fb,acc(:,i));
-        axisCoefficients{i}=abs(cfs(:,2.048*Fs+1:2.048*Fs+originalSize));
+        axisCoefficients{i}=abs(cfs(:,fb.SignalLength/2+1:fb.SignalLength/2+1+originalSize));
     end
     
 end
