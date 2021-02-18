@@ -16,10 +16,10 @@ postImpact=0.25; % 0.25 seconds are considered post impact
 
 % The signal was band-pass filtered between 6 and 100 Hz
 % three axes
-acc=ACC;
+% acc=ACC;
 
 % vertical axis
-% acc=ACC(:,2);
+acc=ACC(:,2);
 
 % gather all fonctions
 accParam=vibAnalyzer(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact);
@@ -42,7 +42,7 @@ peemdParam=peemdAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImp
 % temporal anaylis 
 temporalParam=temporalAnalysis(acc,'Fs',Fs,'preImpact',preImpact,'postImpact',postImpact,'plotFig',plotFig,'newFig',1); % might consider filtering the signal as no frequency range are set
 
-% preImpact=0.22; % time juste before first peak
+% preImpact=0.238; % time juste before first peak
 % estimation
 estimationParam=accEstimation(acc,'Fs',Fs,'preImpact',preImpact,'postImpact',postImpact,'plotFig',plotFig,'newFig',1); % might consider filtering the signal as no frequency range are set
 

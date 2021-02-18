@@ -125,6 +125,7 @@ if size(powers,2)>1
         maxPos=maxPos+delay2peak1(1)*Fs-1;
     end
     
+    if calculDamping==1
     Diff_Puissance=diff(power);
     if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
         [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
@@ -151,7 +152,17 @@ if size(powers,2)>1
     t=0:1/Fs:time_max;
     Pdec=power(Damp_start:Damp_end)';
     options = optimoptions('fmincon','Display','off');
-    [Damping_property,Damp_err]=fmincon(@(d)dampingMinimisation(Pdec,t,d),10,[],[],[],[],0,1000,[],options);
+    if settlingTime>0
+        [Damping_property,Damp_err]=fmincon(@(d)dampingMinimisation(Pdec,t,d),10,[],[],[],[],0,1000,[],options);
+    else
+        Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan;
+    end
+    
+    else
+        
+    Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; settlingTime=nan;
+       
+    end
     
     dampingParam.norm.amplitude=power;
     dampingParam.norm.dampingCoefficient=Damping_property;
