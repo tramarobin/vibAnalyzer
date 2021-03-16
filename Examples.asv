@@ -25,16 +25,8 @@ acc=ACC(:,2);
 accParam=vibAnalyzer(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact);
 
 % cwt with morse wavelets
-% default parameter (3,60)
+% default parame
 cwtParam=cwtAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
-
-% better frequency resolution (3,120)
-fb3120=cwtfilterbank('waveletparameter',[3 120]);
-cwtParamFreq=cwtAnalysis(acc,'fb',fb3120,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
-
-% better time resolution (3,30)
-fb330=cwtfilterbank('waveletparameter',[3 30]);
-cwtParamTime=cwtAnalysis(acc,'fb',fb330,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
 
 % wt with cauchy wavelets (VVT/Enders)
 wtParam=wtAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
