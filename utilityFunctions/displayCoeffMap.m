@@ -34,7 +34,7 @@ end
 
 imagesc(Time,F,flipud(abs(Coeff)))
 ylabel('Frequency (Hz)')
-colormap(jet)
+colormap(cbrewer('seq','Reds', 64))
 yticks(linspace(min(F),max(F),ny))
 if max(F)<1
     ylab=linspace(min(F),max(F),ny);
