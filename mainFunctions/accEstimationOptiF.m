@@ -43,13 +43,18 @@ for i=1:size(acc,2)
     modelParam.measuredAcc(:,i)=acc(:,i);
     modelParam.modelAcc(:,i)=modelAcc;
     modelParam.subModelAcc{i}=subModelAcc;
-    modelParam.error(i)=err;
+    
     for j=1:numel(optiParam)/4
         modelParam.amplitude(i,j)=optiParam(4*(j-1)+1);
         modelParam.damping(i,j)=optiParam(4*(j-1)+2);
         modelParam.frequency(i,j)=optiParam(4*(j-1)+3);
+        modelParam.dampingRatio(i,j)=modelParam.damping(i,j)/(modelParam.frequency(i,j)*sqrt(4*pi.^pi+modelParam.damping(i,j).^2/modelParam.frequency(i,j).^2));
         modelParam.phase(i,j)=optiParam(4*(j-1)+4);
     end
+    
+    modelParam.error(i)=err;
+    modelParam.r(i)=corr(modelAcc,acc);
+    
     clear optiParam err subModelAcc
     
 end

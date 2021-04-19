@@ -51,7 +51,7 @@ peemdParam=peemdAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImp
 % temporal anaylis 
 temporalParam=temporalAnalysis(acc,'Fs',Fs,'preImpact',preImpact,'postImpact',postImpact,'plotFig',plotFig,'newFig',1); % might consider filtering the signal as no frequency range are set
 
-% preImpact=0.238; % time juste before first peak
+preImpact=0.238; % time juste before first peak
 % estimation
 estimationParam=accEstimation(acc,'Fs',Fs,'preImpact',preImpact,'postImpact',postImpact,'plotFig',plotFig,'newFig',1); % might consider filtering the signal as no frequency range are set
 

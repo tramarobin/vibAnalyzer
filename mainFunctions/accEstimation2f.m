@@ -31,14 +31,16 @@ for i=1:size(acc,2)
     subModelAcc(:,2)=(optiParam(5).*exp(-optiParam(6).*t)).*sin((2.*pi.*optiParam(7).*t)+optiParam(8));
 modelAcc=sum(subModelAcc,2);
     
-    modelParam.measuredAcc(:,i)=acc(:,i);
-    modelParam.modelAcc(:,i)=modelAcc;
-    modelParam.amplitude(i,:)=optiParam([1 5]);
-    modelParam.damping(i,:)=optiParam([2 6]);
-    modelParam.frequency(i,:)=optiParam([3 7]);
-    modelParam.phase(i,:)=optiParam([4 8]);
-    modelParam.error(i)=err;
-    
+modelParam.measuredAcc(:,i)=acc(:,i);
+modelParam.modelAcc(:,i)=modelAcc;
+modelParam.amplitude(i,:)=optiParam([1 5]);
+modelParam.damping(i,:)=optiParam([2 6]);
+modelParam.dampingRatio(i,1)=optiParam(2)/(optiParam(3)*sqrt(4*pi.^pi+optiParam(2).^2/optiParam(3).^2));
+modelParam.dampingRatio(i,2)=optiParam(6)/(optiParam(7)*sqrt(4*pi.^pi+optiParam(6).^2/optiParam(7).^2));
+modelParam.frequency(i,:)=optiParam([3 7]);
+modelParam.phase(i,:)=optiParam([4 8]);
+modelParam.error(i)=err;
+modelParam.r(i)=corr(modelAcc,acc);
 end
 
 
