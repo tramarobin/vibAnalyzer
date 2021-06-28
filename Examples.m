@@ -19,7 +19,7 @@ postImpact=0.25; % 0.25 seconds are considered post impact
 % acc=ACC;
 
 % vertical axis
-acc=ACC(:,2);
+acc=ACC(:,3);
 
 % gather all fonctions
 accParam=vibAnalyzer(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact);
