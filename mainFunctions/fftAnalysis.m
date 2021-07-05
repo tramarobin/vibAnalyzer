@@ -22,7 +22,7 @@ addParameter(p,'supFreq',[],@isnumeric); % Freq max analyzed
 addParameter(p,'padding',[],@isnumeric); % number of point for padding
 addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure
-addParameter(p,'newFig',0,@isnumeric); % if 1, plot new figure
+addParameter(p,'newFig',1,@isnumeric); % if 1, plot new figure
 addParameter(p,'isIMF',0,@isnumeric); % 1 sum the spectrums if IMF
 addParameter(p,'preImpact',[],@isnumeric); % pre impact time (default = start of the signal)
 addParameter(p,'postImpact',[],@isnumeric); % total time analyzed (default = end of signal)
