@@ -33,7 +33,7 @@ addParameter(p,'newFig',1,@isnumeric); % create new fig
 addParameter(p,'isIMF',0,@isnumeric); % sum the maps instead of norm if IMF
 addParameter(p,'reflection',[],@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2 seconds on each side centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
 addParameter(p,'damping',1,@isnumeric); % 0 to not perform damping estimation
-addParameter(p,'delay2peak',[],@isnumeric); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
+addParameter(p,'delay2peak',[]); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
 
 parse(p,varargin{:});
 Fs=p.Results.Fs;
@@ -87,6 +87,18 @@ end
 cwtParam.map.dimensions=size(intCoefficients{1});
 cwtParam.map.fs=newFs;
 cwtParam.map.f=intFreq;
+
+
+%% delete NaN coefficient and associated frequencies
+nanVal=find(isnan(mean(intCoefficients{1}')));
+intFreq(nanVal)=[];
+for i=1:size(acc,2)
+    intCoefficients{i}(nanVal,:)=[];
+    if i>2
+    intNormCoefficients(nanVal,:)=[];
+    end
+end
+
 
 %% Integration of time and frequency
 for i=1:size(acc,2)

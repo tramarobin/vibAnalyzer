@@ -3,23 +3,26 @@ close all
 clc
 
 addpath(genpath(pwd));
+addpath(genpath('C:\Users\trama\OneDrive - University of Calgary\library_matlab'));
 load ACC
 
 
 %% Parameters (see funtion descriptions for other parameters)
 Fs=2000; % sample frequency
-infFreq=6; % lowest frequency analyzed (set the range for cwt and fft, discart some IMF or wavelets from wt)
-supFreq=100;  % highest frequency analyzed (set the range for cwt and fft, discart some IMF or wavelets from wt)
+infFreq=5; % lowest frequency analyzed (set the range for cwt and fft, discart some IMF or wavelets from wt)
+supFreq=200;  % highest frequency analyzed (set the range for cwt and fft, discart some IMF or wavelets from wt)
 plotFig=1; % 0 to not plot
 preImpact=0.2; % the impact occured at 0.2 second after the start of the signal (400 points at 2000 Hz)
 postImpact=0.25; % 0.25 seconds are considered post impact
 
 % The signal was band-pass filtered between 6 and 100 Hz
 % three axes
-% acc=ACC;
+acc=ACC;
 
 % vertical axis
-acc=ACC(:,3);
+% acc=ACC(:,1);
+
+acc2=fct_bandPass_ButterWorth_Filter(2,20,200,Fs,acc,1);
 
 % gather all fonctions
 accParam=vibAnalyzer(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact);
@@ -27,6 +30,7 @@ accParam=vibAnalyzer(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact'
 % cwt with morse wavelets
 % default parameter (3,60)
 cwtParam=cwtAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
+cwtParam=cwtAnalysis(acc2,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
 
 % better frequency resolution (3,120)
 fb3120=cwtfilterbank('waveletparameter',[3 120]);
@@ -41,6 +45,7 @@ wtParam=wtAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',p
 
 % fft analysis
 fftParam=fftAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
+fftParam=fftAnalysis(acc2,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);
 
 % emd analysis
 emdParam=emdAnalysis(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact,'plotfig',plotFig,'newfig',1);

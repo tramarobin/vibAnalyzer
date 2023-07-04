@@ -50,16 +50,17 @@ for i=1:size(acc,2)
     [minAcc(i),tMinAcc(i)]=min(acc(:,i));
     [peakAcc(i),time2peak(i)]=max(abs(acc(:,i)));
     peak2peak(i)=maxAcc(i)-minAcc(i);
-    
+
     tPeaks(i,:)=sort([tMaxAcc(i) tMinAcc(i)]);
     tp2p(i)=diff(tPeaks(i,:))/Fs;
     estimatedFrequency(i)=1/(2*tp2p(i)); % Boyer et al. 2004; doi:10.1016/j.jbiomech.2004.01.002
-    
+
     integratedAmplitude(i)=trapz(abs(acc(:,i)))/Fs;
-    
+
     rmsAcc(i)=mean(rmsWindow(signalNorm(acc(:,i)),0.01,Fs)); % Ehrstrom et al. 2018; 10.3389/fphys.2018.01627
     standardDeviation(i)=std(acc(:,i)); % Gellaerts et al. (2017); 10.23736/S0022-4707.16.06721-9
-    
+    peakJerk(i)=max(abs(diff(acc(:,i))))*Fs;
+
 end
 
 temporalParam.sep.max=maxAcc;
@@ -77,6 +78,7 @@ temporalParam.sep.time2peak=time2peak/Fs;
 temporalParam.sep.ind.max=tMaxAcc;
 temporalParam.sep.ind.min=tMinAcc;
 temporalParam.sep.ind.peak=time2peak;
+temporalParam.sep.peakJerk=peakJerk;
 
 %% Norm of signal
 if size(acc,2)>1
@@ -87,56 +89,56 @@ if size(acc,2)>1
     end
     [nPeakAcc,nTime2peak]=max(nAcc);
     nIintegratedAmplitude=trapz(nAcc)/Fs;
-    
+
     nRmsAcc=mean(rmsWindow(nAcc,0.01,Fs)); % Ehrstrom et al. 2018; 10.3389/fphys.2018.01627
     nStandardDeviation=std(nAcc); % Gellaerts et al. (2017); 10.23736/S0022-4707.16.06721-9
-    
-    
+
+
     temporalParam.norm.peak=nPeakAcc;
     temporalParam.norm.time2peak=nTime2peak/Fs;
     temporalParam.norm.integratedAmplitude=nIintegratedAmplitude;
     temporalParam.norm.rms=nRmsAcc;
     temporalParam.norm.standardDeviation=nStandardDeviation;
     temporalParam.norm.ind2peak=nTime2peak;
-    
-    
+    temporalParam.norm.peakJerk=max(abs(diff(nAcc)))*Fs;
+
 end
 
 %% Damping
 if damping==1
-accEnv=envelope(abs(acc),round(mean(0.5./estimatedFrequency*Fs)),'peak');
-temporalParam.damp=dampingEstimation(accEnv(min(tPeaks(:,1)):end,:),'Fs',Fs,'isIMF',1,'delay2peak',0.1);
+    accEnv=envelope(abs(acc),round(mean(0.5./estimatedFrequency*Fs)),'peak');
+    temporalParam.damp=dampingEstimation(accEnv(min(tPeaks(:,1)):end,:),'Fs',Fs,'isIMF',1,'delay2peak',0.1);
 end
 
 %% PLOT
 if plotFig==1
     if newFig==1
-        figure('units','normalized','outerposition',[0 0 1 1],'visible','on')
+    figure('Units','centimeters','Position',[5 5 16 9],'Visible','on')
     end
-    
+
     time=1/Fs:1/Fs:size(acc,1)/Fs;
-    
+
     if size(acc,2)>1 % several signals
-        
+
         plot(time,nAcc,'k'); hold on
         plot(time,acc(:,1),':');
         plot(time,acc(:,2),'k--');
         if size(acc,2)>2
             plot(time,acc(:,3),'k-.');
         end
-        
+
         scatter(nTime2peak/Fs,nPeakAcc,'k+','HandleVisibility','off');
         text(nTime2peak/Fs+0.02*max(time),nPeakAcc,['Peak acceleration = ' sprintf('%0.1f',nPeakAcc) ' m\cdots^-^2 at t = ' sprintf('%0.3f',nTime2peak/Fs) ' s'])
-        
+
         if size(acc,2)==2
             legend({'norm','x','y'},'box','off')
         else
             legend({'norm','x','y','z'},'box','off')
         end
         title('Acceleration signals in temporal domain')
-        
+
     else % one signal : plot the signal analysis
-        plot(time,acc,'k','HandleVisibility','on'); hold on
+        plot(time,acc,'HandleVisibility','on','LineWidth',1.2); hold on
         scatter(tMaxAcc/Fs,maxAcc,'k+','HandleVisibility','off');
         scatter(tMinAcc/Fs,minAcc,'kx','HandleVisibility','off');
         text(tMinAcc/Fs+0.02*max(time),minAcc,['Peak deceleration = ' sprintf('%0.1f',minAcc) ' m\cdots^-^2 at t = ' sprintf('%0.3f',tMinAcc/Fs) ' s'])
@@ -150,18 +152,19 @@ if plotFig==1
             text(1.5*max([tMaxAcc tMinAcc])/Fs,minAcc+0.15*peak2peak,['Time between peaks = ' sprintf('%0.3f',tp2p) ' s'])
             text(1.5*max([tMaxAcc tMinAcc])/Fs,minAcc+0.2*peak2peak,['Estimated frequency = ' sprintf('%0.1f',estimatedFrequency) ' Hz'])
         end
-        
-        
+
+
         title('Acceleration signal in time domain')
-        
+
     end
-    
+
     box off
     xlabel('Time (s)')
     ylabel('Acceleration  (m\cdots^-^2)')
     yLimits = get(gca, 'YLim');
     ylim(1.1*yLimits);
-    
+    xlim([time(1) time(end)])
+
 end
 end
 

@@ -19,8 +19,8 @@ function dampingParam=dampingEstimation(power,varargin)
 p = inputParser;
 addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
 addParameter(p,'calculDamping',1,@isnumeric); % calculation of damping
-addParameter(p,'powerLimits',0.1,@isnumeric); % Percentage of power at which the LSminimisation stop
-addParameter(p,'delay2peak',[],@isnumeric); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
+addParameter(p,'powerLimits',0.1,@isnumeric); % Ratio of power at which the LSminimisation stop
+addParameter(p,'delay2peak',[]); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure (for one axis, or the norm)
 addParameter(p,'newFig',0,@isnumeric); % if 1, plot new figure
 addParameter(p,'isIMF',0,@isnumeric); % 1 sum the spectrums if IMF
@@ -51,47 +51,71 @@ for i=1:size(power,2)
     elseif numel(delay2peak)==1
         [Maximal_power,maxPos]=max(power(1:delay2peak*Fs));
     elseif numel(delay2peak)==2
-        [Maximal_power,maxPos]=max(power(delay2peak1(1)*Fs:delay2peak(2)*Fs));
-        maxPos=maxPos+delay2peak1(1)*Fs-1;
+        [Maximal_power,maxPos]=max(power(delay2peak(1)*Fs:delay2peak(2)*Fs));
+        maxPos=maxPos+delay2peak(1)*Fs-1;
+    elseif ischar(delay2peak)
+        [Ypk,Xpk,~,~]=findpeaks(power,'MinPeakHeight',0.5*max(power),'MinPeakProminence',0.1*max(power));
+        if strcmp(delay2peak,'first')
+            if isempty(Ypk)
+                [Maximal_power,maxPos]=max(power);
+            else
+                Maximal_power=Ypk(1) ;
+                maxPos=Xpk(1);
+            end
+        elseif strcmp(delay2peak,'last')
+            if isempty(Ypk)
+                [Maximal_power,maxPos]=max(power);
+            else
+                Maximal_power=Ypk(end) ;
+                maxPos=Xpk(end);
+            end
+        else
+            error('Wrong delay2peak parameter, choose between time, first, or last peak')
+        end
     end
+    
+    
     
     if calculDamping==1
-    Diff_Puissance=diff(power);
-    if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
-        [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
-    else
-        [~,Damp_start]=min(Diff_Puissance(maxPos:end));
-    end
-    Damp_start=Damp_start+maxPos-1;
-    Damp_seuil=find(power(Damp_start:end)<powerLimits*Maximal_power,1)+Damp_start-1;
-    Damp_diff_d=find(Diff_Puissance(Damp_start:end)>0.001*power(Damp_start));
-    Damp_diff_s=find(power(Damp_start:end)<0.5*power(Damp_start));
-    Damp_diff=intersect(Damp_diff_d,Damp_diff_s);
-    if isempty(Damp_diff)==0
-        Damp_diff=Damp_diff(1)+Damp_start-1;
-    else
-        Damp_diff=size(power,1);
-    end
-    if isempty(Damp_seuil) && isempty(Damp_diff)
-        Damp_end=size(power,1);
-    else
-        Damp_end=min([Damp_seuil Damp_diff]);
-    end
-    settlingTime=(Damp_end-maxPos)/Fs;
-    time_max=(Damp_end-Damp_start)/Fs;
-    t=0:1/Fs:time_max;
-    Pdec=power(Damp_start:Damp_end)';
-    options = optimoptions('fmincon','Display','off');
-    if settlingTime>0
-        [Damping_property,Damp_err]=fmincon(@(d)dampingMinimisation(Pdec,t,d),10,[],[],[],[],0,1000,[],options);
-    else
-        Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan;
-    end
-    
+        Diff_Puissance=diff(power);
+        if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
+            [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
+        else
+            [~,Damp_start]=min(Diff_Puissance(maxPos:end));
+        end
+        Damp_start=Damp_start+maxPos-1;
+        Damp_seuil=find(power(Damp_start:end)<powerLimits*Maximal_power,1)+Damp_start-1;
+        Damp_diff_d=find(Diff_Puissance(Damp_start:end)>0.001*power(Damp_start));
+        Damp_diff_s=find(power(Damp_start:end)<0.5*power(Damp_start));
+        Damp_diff=intersect(Damp_diff_d,Damp_diff_s);
+        if isempty(Damp_diff)==0
+            Damp_diff=Damp_diff(1)+Damp_start-1;
+        else
+            Damp_diff=size(power,1);
+        end
+        if isempty(Damp_seuil) && isempty(Damp_diff)
+            Damp_end=size(power,1);
+        else
+            Damp_end=min([Damp_seuil Damp_diff]);
+        end
+        settlingTime=(Damp_end-maxPos)/Fs;
+        time_max=(Damp_end-Damp_start)/Fs;
+        t=0:1/Fs:time_max;
+        Pdec=power(Damp_start:Damp_end)';
+        options = optimoptions('fmincon','Display','off');
+        if settlingTime>0
+            [Damping_property,Damp_err]=fmincon(@(d)dampingMinimisation(Pdec,t,d),10,[],[],[],[],0,1000,[],options);
+            r = corr2(Pdec, Pdec(1).*exp(-Damping_property*((0:size(Damp_start:Damp_end,2)-1)/Fs)));
+            
+        else
+            Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; r=nan;
+        end
+        
+        
     else
         
-    Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; settlingTime=nan;
-       
+        Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; settlingTime=nan; r=nan;
+        
     end
     dampingParam.sep.dampingCoefficient(i)=Damping_property;
     dampingParam.sep.settlingTime(i)=settlingTime;
@@ -104,6 +128,7 @@ for i=1:size(power,2)
     dampingParam.sep.temp.dampStart(i)=Damp_start/Fs;
     dampingParam.sep.temp.dampEnd(i)=Damp_end/Fs;
     dampingParam.sep.totalError(i)=Damp_err;
+    dampingParam.sep.r(i)=r;
     
 end
 
@@ -121,47 +146,72 @@ if size(powers,2)>1
     elseif numel(delay2peak)==1
         [Maximal_power,maxPos]=max(power(1:delay2peak*Fs));
     elseif numel(delay2peak)==2
-        [Maximal_power,maxPos]=max(power(delay2peak1(1)*Fs:delay2peak(2)*Fs));
-        maxPos=maxPos+delay2peak1(1)*Fs-1;
+        [Maximal_power,maxPos]=max(power(delay2peak(1)*Fs:delay2peak(2)*Fs));
+        maxPos=maxPos+delay2peak(1)*Fs-1;
+    elseif ischar(delay2peak)
+        [Ypk,Xpk,~,~]=findpeaks(power,'MinPeakHeight',0.5*max(power),'MinPeakProminence',0.1*max(power));
+        if strcmp(delay2peak,'first')
+            if isempty(Ypk)
+                [Maximal_power,maxPos]=max(power);
+            else
+                Maximal_power=Ypk(1) ;
+                maxPos=Xpk(1);
+            end
+        elseif strcmp(delay2peak,'last')
+            if isempty(Ypk)
+                [Maximal_power,maxPos]=max(power);
+            else
+                Maximal_power=Ypk(end) ;
+                maxPos=Xpk(end);
+            end
+        else
+            error('Wrong delay2peak parameter, choose between time, first, or last peak')
+        end
+    end
+    
+    if isempty(maxPos)
+        [Maximal_power,maxPos]=max(power);
     end
     
     if calculDamping==1
-    Diff_Puissance=diff(power);
-    if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
-        [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
-    else
-        [~,Damp_start]=min(Diff_Puissance(maxPos:end));
-    end
-    Damp_start=Damp_start+maxPos-1;
-    Damp_seuil=find(power(Damp_start:end)<powerLimits*Maximal_power,1)+Damp_start-1;
-    Damp_diff_d=find(Diff_Puissance(Damp_start:end)>0.001*power(Damp_start));
-    Damp_diff_s=find(power(Damp_start:end)<0.5*power(Damp_start));
-    Damp_diff=intersect(Damp_diff_d,Damp_diff_s);
-    if isempty(Damp_diff)==0
-        Damp_diff=Damp_diff(1)+Damp_start-1;
-    else
-        Damp_diff=size(power,1);
-    end
-    if isempty(Damp_seuil) && isempty(Damp_diff)
-        Damp_end=size(power,1);
-    else
-        Damp_end=min([Damp_seuil Damp_diff]);
-    end
-    settlingTime=(Damp_end-maxPos)/Fs;
-    time_max=(Damp_end-Damp_start)/Fs;
-    t=0:1/Fs:time_max;
-    Pdec=power(Damp_start:Damp_end)';
-    options = optimoptions('fmincon','Display','off');
-    if settlingTime>0
-        [Damping_property,Damp_err]=fmincon(@(d)dampingMinimisation(Pdec,t,d),10,[],[],[],[],0,1000,[],options);
-    else
-        Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan;
-    end
-    
+        Diff_Puissance=diff(power);
+        if maxPos+round(50*Fs/1000)<numel(Diff_Puissance)
+            [~,Damp_start]=min(Diff_Puissance(maxPos:maxPos+round(50*Fs/1000)));
+        else
+            [~,Damp_start]=min(Diff_Puissance(maxPos:end));
+        end
+        Damp_start=Damp_start+maxPos-1;
+        Damp_seuil=find(power(Damp_start:end)<powerLimits*Maximal_power,1)+Damp_start-1;
+        Damp_diff_d=find(Diff_Puissance(Damp_start:end)>0.001*power(Damp_start));
+        Damp_diff_s=find(power(Damp_start:end)<0.5*power(Damp_start));
+        Damp_diff=intersect(Damp_diff_d,Damp_diff_s);
+        if isempty(Damp_diff)==0
+            Damp_diff=Damp_diff(1)+Damp_start-1;
+        else
+            Damp_diff=size(power,1);
+        end
+        if isempty(Damp_seuil) && isempty(Damp_diff)
+            Damp_end=size(power,1);
+        else
+            Damp_end=min([Damp_seuil Damp_diff]);
+        end
+        settlingTime=(Damp_end-maxPos)/Fs;
+        time_max=(Damp_end-Damp_start)/Fs;
+        t=0:1/Fs:time_max;
+        Pdec=power(Damp_start:Damp_end)';
+        options = optimoptions('fmincon','Display','off');
+        if settlingTime>0
+            [Damping_property,Damp_err]=fmincon(@(d)dampingMinimisation(Pdec,t,d),10,[],[],[],[],0,1000,[],options);
+            r = corr2(Pdec, Pdec(1).*exp(-Damping_property*((0:size(Damp_start:Damp_end,2)-1)/Fs)));
+            
+        else
+            Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; r=nan;
+        end
+        
     else
         
-    Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; settlingTime=nan;
-       
+        Damping_property=nan; Damp_err=nan; Damp_start=nan; Damp_end=nan; settlingTime=nan; r=nan;
+        
     end
     
     dampingParam.norm.amplitude=power;
@@ -176,7 +226,7 @@ if size(powers,2)>1
     dampingParam.norm.temp.dampStart=Damp_start/Fs;
     dampingParam.norm.temp.dampEnd=Damp_end/Fs;
     dampingParam.norm.totalError=Damp_err;
-    
+    dampingParam.norm.r=r;
 end
 
 dampingParam.samplingFrequency=Fs;
@@ -204,21 +254,21 @@ if plotFig==1
     end
     scatter(time(maxPos),Maximal_power,'k+','HandleVisibility','off')
     if calculDamping==1
-    if Damp_start<numel(time)
-        scatter(time(Damp_start),power(Damp_start),'kv')
-        if Damp_end<=size(time,2)
-            scatter(time(Damp_end),power(Damp_end),'ko')
-            plot(time(Damp_start:Damp_end),Pdec(1).*exp(-Damping_property*((0:size(Damp_start:Damp_end,2)-1)/Fs)),'k--','Linewidth',2)
-        else
-            plot(time(Damp_start:end),Pdec(1).*exp(-Damping_property*((0:size(Damp_start:numel(time),2)-1)/Fs)),'k--','Linewidth',2)
-            warning('increase time post impact to see complete damping on the figure')
+        if Damp_start<numel(time)
+            scatter(time(Damp_start),power(Damp_start),'kv')
+            if Damp_end<=size(time,2)
+                scatter(time(Damp_end),power(Damp_end),'ko')
+                plot(time(Damp_start:Damp_end),Pdec(1).*exp(-Damping_property*((0:size(Damp_start:Damp_end,2)-1)/Fs)),'k--','Linewidth',2)
+            else
+                plot(time(Damp_start:end),Pdec(1).*exp(-Damping_property*((0:size(Damp_start:numel(time),2)-1)/Fs)),'k--','Linewidth',2)
+                warning('increase time post impact to see complete damping on the figure')
+            end
         end
-    end
     end
     text(time(maxPos)+0.05*max(time),Maximal_power,['Peak amplitude = ' sprintf('%0.1f',Maximal_power) ' ' units ' at t = ' sprintf('%3.3f',maxPos/Fs) ' s'])
     if calculDamping==1
-    text(0.02*max(time),0.2*max(power),['Damping coefficient = ' sprintf('%3.1f',Damping_property) ' s^-^1'])
-    text(0.02*max(time),0.1*max(power),['Settling time = ' sprintf('%3.3f',settlingTime) ' s'])
+        text(0.02*max(time),0.2*max(power),['Damping coefficient = ' sprintf('%3.1f',Damping_property) ' s^-^1'])
+        text(0.02*max(time),0.1*max(power),['Settling time = ' sprintf('%3.3f',settlingTime) ' s'])
     end
     xlabel('Time (s)');
     ylabel(['Amplitude (' units ')'])
