@@ -46,6 +46,21 @@ end
 f=centerFrequencies(fb);
 [minfreq maxfreq]=cwtfreqbounds(fb.SignalLength,fb.SamplingFrequency,'Wavelet',fb.Wavelet);
 
+if isempty(infFreq)
+    if minfreq>1
+        infFreq=ceil(minfreq);
+    else
+        infFreq=minfreq;
+    end
+end
+if isempty(supFreq)
+    if maxfreq>1
+        supFreq=floor(maxfreq);
+    else
+        supFreq=maxfreq;
+    end
+end
+
 infLim=find(f<=infFreq-interpFreq);
 if isempty(infLim)
     infLim=numel(f);
@@ -68,22 +83,6 @@ else
         supLim=supLim(end)-1;
     else
         supLim=supLim(end);
-    end
-end
-
-
-if isempty(infFreq)
-    if minfreq>1
-        infFreq=ceil(minfreq);
-    else
-        infFreq=minfreq;
-    end
-end
-if isempty(supFreq)
-    if maxfreq>1
-        supFreq=floor(maxfreq);
-    else
-        supFreq=maxfreq;
     end
 end
 

@@ -20,7 +20,7 @@ p = inputParser;
 addParameter(p,'infFreq',[],@isnumeric); % Freq min analyzed
 addParameter(p,'supFreq',[],@isnumeric); % Freq max analyzed
 addParameter(p,'padding',[],@isnumeric); % number of point for padding
-addParameter(p,'Fs',1000,@isnumeric); % samplefrequency
+addParameter(p,'Fs',2000,@isnumeric); % samplefrequency
 addParameter(p,'plotFig',0,@isnumeric); % if 1, plot figure
 addParameter(p,'newFig',1,@isnumeric); % if 1, plot new figure
 addParameter(p,'isIMF',0,@isnumeric); % 1 sum the spectrums if IMF

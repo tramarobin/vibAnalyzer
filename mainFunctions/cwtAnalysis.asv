@@ -7,7 +7,7 @@
 
 
 %% INPUTS:
-% Acceleration signal in m/s² in column (time,axes)
+% Acceleration signal in m/sÂ² in column (time,axes)
 
 %% OPTIONS
 % see addParameter section
@@ -32,8 +32,6 @@ addParameter(p,'newFig',1,@isnumeric); % create new fig
 addParameter(p,'isIMF',0,@isnumeric); % sum the maps instead of norm if IMF
 addParameter(p,'reflection',[],@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2 seconds on each side centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
 addParameter(p,'damping',1,@isnumeric); % 0 to not perform damping estimation
-addParameter(p,'dampingLim',[],@isnumeric); % 0 to not perform damping estimation
-
 addParameter(p,'delay2peak',[]); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
 
 parse(p,varargin{:});
@@ -52,8 +50,6 @@ isIMF=p.Results.isIMF;
 reflection=p.Results.reflection;
 damping=p.Results.damping;
 delay2peak=p.Results.delay2peak;
-dampingLim=p.Results.dampingLim;
-
 %% Transpose if not the right dimension
 acc=transposeColmunIfNot(acc);
 
@@ -104,7 +100,7 @@ end
 
 %% analysis of frequency content over time
 for i=1:size(acc,2)
-    for timePoints=1:size(intCoefficients{i},2)
+    for timePoints=1:size(cwtParam.map.sep.amplitude{i},2)
         freqAnalysisTMP=frequencyEstimation(intFreq,intCoefficients{i}(:,timePoints));
         cwtParam.map.sep.time{i}.main(timePoints,:)=freqAnalysisTMP.sep.main;
         cwtParam.map.sep.time{i}.median(timePoints,:)=freqAnalysisTMP.sep.median;
@@ -113,8 +109,8 @@ for i=1:size(acc,2)
 end
 
 if size(acc,2)>1
-    for timePoints=1:size(intNormCoefficients,2)
-        freqAnalysisTMP=frequencyEstimation(intFreq,intNormCoefficients(:,timePoints));
+    for timePoints=1:size(cwtParam.map.sep.amplitude{i},2)
+        freqAnalysisTMP=frequencyEstimation(intFreq,intCoefficients{i}(:,timePoints));
         cwtParam.map.norm.time.main(timePoints,:)=freqAnalysisTMP.sep.main;
         cwtParam.map.norm.time.median(timePoints,:)=freqAnalysisTMP.sep.median;
         cwtParam.map.norm.time.mean(timePoints,:)=freqAnalysisTMP.sep.mean;
@@ -170,7 +166,7 @@ cwtParam.freq=frequencyEstimation(intFreq,energy,'plotfig',plotFig,'isIMF',isIMF
 if plotFig==1
     subplot(224)
 end
-cwtParam.damp=dampingEstimation(power,'calculDamping',damping,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak, 'dampingLim',dampingLim, 'titleFig','Amplitude in the time domain');
+cwtParam.damp=dampingEstimation(power,'calculDamping',damping,'Fs',newFs,'plotfig',plotFig,'isIMF',isIMF,'delay2peak',delay2peak,'titleFig','Amplitude in the time domain');
 
 
 end
