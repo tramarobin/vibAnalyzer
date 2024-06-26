@@ -53,7 +53,7 @@ for i=1:size(acc,2)
     end
     
     modelParam.error(i)=err;
-    modelParam.r(i)=corr(modelAcc,acc);
+    modelParam.r(i)=corr(modelAcc,acc(:,i));
     
     clear optiParam err subModelAcc
     

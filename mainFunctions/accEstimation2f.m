@@ -40,7 +40,7 @@ modelParam.dampingRatio(i,2)=optiParam(6)/(optiParam(7)*sqrt(4*pi.^pi+optiParam(
 modelParam.frequency(i,:)=optiParam([3 7]);
 modelParam.phase(i,:)=optiParam([4 8]);
 modelParam.error(i)=err;
-modelParam.r(i)=corr(modelAcc,acc);
+modelParam.r(i)=corr(modelAcc,acc(:,i));
 end
 
 

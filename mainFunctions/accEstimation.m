@@ -37,7 +37,7 @@ for i=1:size(acc,2)
     modelParam.phase(i)=optiParam(4);
     modelParam.error(i)=err;
     modelParam.dampingRatio(i)=optiParam(2)/(optiParam(3)*sqrt(4*pi.^pi+optiParam(2).^2/optiParam(3).^2));
-    modelParam.r(i)=corr(modelAcc,acc);
+    modelParam.r(i)=corr(modelAcc,acc(:,i));
     
 end
 

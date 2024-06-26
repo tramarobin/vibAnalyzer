@@ -22,8 +22,6 @@ acc=ACC;
 % vertical axis
 % acc=ACC(:,1);
 
-acc2=fct_bandPass_ButterWorth_Filter(2,20,200,Fs,acc,1);
-
 % gather all fonctions
 accParam=vibAnalyzer(acc,'Fs',Fs,'infFreq',infFreq,'supfreq',supFreq,'preImpact',preImpact,'postImpact',postImpact);
 
