@@ -33,7 +33,6 @@ addParameter(p,'isIMF',0,@isnumeric); % sum the maps instead of norm if IMF
 addParameter(p,'reflection',[],@isnumeric); % 1 use reflection at the start of the signal and add 0 padding of 2 seconds on each side centered on heel strike, it improve mode separation and allow to investigate lower frequencies, /!\ the signal analyzed is not the one you measured anymore. Enders et al. 2012; http://dx.doi.org/10.1016/j.jbiomech.2012.08.027
 addParameter(p,'damping',1,@isnumeric); % 0 to not perform damping estimation
 addParameter(p,'dampingLim',[],@isnumeric); % 0 to not perform damping estimation
-
 addParameter(p,'delay2peak',[]); % search maximal peak up to this value in sec, or between 2 values [startSearch endSearch]
 
 parse(p,varargin{:});

@@ -107,7 +107,7 @@ end
 %% Damping
 if damping==1
     accEnv=envelope(signalNorm(acc),round(mean(0.5./estimatedFrequency*Fs)),'peak');
-    temporalParam.damp=dampingEstimation(accEnv,'Fs',Fs,'isIMF',1,'delay2peak','first','dampingLim', [0.85, 0.1]);
+    temporalParam.damp=dampingEstimation(accEnv(preImpactPoints:end,:),'Fs',Fs,'isIMF',1,'delay2peak','first','dampingLim', [0.85, 0.1]);
 end
 
 %% PLOT
@@ -166,7 +166,7 @@ if plotFig==1
     xlim([time(1) time(end)])
 
     if damping==1
-temporalParam.damp=dampingEstimation(accEnv,'Fs',Fs,'isIMF',1, 'delay2peak','first','dampingLim', [0.85, 0.1], 'plotFig',1, 'newFig', 1);
+temporalParam.damp=dampingEstimation(accEnv(preImpactPoints:end,:),'Fs',Fs,'isIMF',1, 'delay2peak','first','dampingLim', [0.85, 0.1], 'plotFig',1, 'newFig', 1);
     end
 
 end
